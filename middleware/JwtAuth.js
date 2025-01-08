@@ -1,15 +1,16 @@
 const jwt = require("jsonwebtoken");
 
 function jwtAuth(req, res, next) {
-  const token = req.cookies.token;
-  try {
-    const user = jwt.verify(token, process.env.ACCESS_TOKEN);
-    res.user = user;
+  const authHeader = req.headers['authorization'];
+  
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
+  
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
     next();
-  } catch (err) {
-    console.log("CLEAR TOKE:::");
-    res.clearCookie("token");
-  }
+  });
 }
 
 module.exports = jwtAuth;
